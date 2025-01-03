@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev tools</title>
+</head>
+<style>
+  * {
+    font-family: 'Courier New', Courier, monospace;
+  }
+  #button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  #button-container > button {
+    width: fit-content;
+    cursor: pointer;
+  }
+</style>
+<body>
+  <div>
+    <h2 style="text-align: center;">Switch branch</h2>
+    <div id="button-container">
+    </div>
+  </div>
+
+  <script>
+    async function fetchBranches() {
+      try {
+        const response = await fetch("http://localhost:2000/api/get-branch");
+        const jsObj = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        if (jsObj?.data) {
+          const data = jsObj.data;
+          const buttonContainer = document.getElementById("button-container");
+          buttonContainer.innerHTML = "";
+          
+          data.forEach(branch => {
+            const button = document.createElement("button");
+            button.textContent = branch;  
+            button.addEventListener("click", () => {
+              handleButtonClick(branch);  
+            });
+            buttonContainer.appendChild(button);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+        alert("Failed to load branches. Please try again later.");
+      }
+    }
+
+    async function handleButtonClick(branch) {
+      try {
+        const response = await fetch(`http://localhost:2000/api/switch-branch/${branch}`);
+
+        if (response.ok) {
+          console.log(`Switched to branch: ${branch}`);
+        } else {
+          console.log("Error switching branch");
+          alert("Failed to switch branch");
+        }
+      } catch (error) {
+        console.error("Error calling the API to switch branch:", error);
+        alert("An error occurred while switching the branch");
+      }
+    }
+
+    window.onload = fetchBranches;
+  </script>
+</body>
+</html>
